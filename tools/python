@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Resolve project root (parent of tools/)
+PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
+# Add project root to PYTHONPATH
+export PYTHONPATH="$PROJECT_ROOT:${PYTHONPATH}"
+
+# Use the pinned conda python
+exec /opt/miniconda3/envs/ball_pinn_demo/bin/python "$@"

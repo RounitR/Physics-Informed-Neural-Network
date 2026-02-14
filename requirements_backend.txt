@@ -1,0 +1,37 @@
+annotated-doc==0.0.4
+annotated-types==0.7.0
+anyio==4.12.1
+click==8.1.8
+contourpy @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_f3ncrd21fo/croot/contourpy_1738161171293/work
+cycler @ file:///tmp/build/80754af9/cycler_1637851556182/work
+exceptiongroup==1.3.1
+fastapi==0.128.8
+filelock @ file:///private/var/folders/k1/30mswbxs7r1g6zwn8y4fyt500000gp/T/abs_f6dmuewahq/croot/filelock_1744281400993/work
+fonttools @ file:///opt/miniconda3/conda-bld/fonttools_1759754873342/work
+gmpy2 @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_51391juwln/croot/gmpy2_1738085477864/work
+h11==0.16.0
+idna==3.11
+importlib_resources @ file:///opt/miniconda3/conda-bld/importlib_resources-suite_1759400760178/work
+Jinja2 @ file:///private/var/folders/k1/30mswbxs7r1g6zwn8y4fyt500000gp/T/abs_2cnn4kenrm/croot/jinja2_1741710859444/work
+kiwisolver @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_93o8te804v/croot/kiwisolver_1672387163224/work
+MarkupSafe @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_1f_uj4vxik/croot/markupsafe_1738584045311/work
+matplotlib==3.9.2
+mpmath @ file:///private/var/folders/k1/30mswbxs7r1g6zwn8y4fyt500000gp/T/abs_17iu6a8a3m/croot/mpmath_1690848269369/work
+networkx @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_797xfkx_y7/croot/networkx_1717597499877/work
+numpy @ file:///private/var/folders/k1/30mswbxs7r1g6zwn8y4fyt500000gp/T/abs_feerxblx2i/croot/numpy_and_numpy_base_1755590858426/work/dist/numpy-1.26.4-cp39-cp39-macosx_11_0_arm64.whl#sha256=4bd06254ca7848fbfb7323612cc5326ca11fbd856d2b0c7888a633c3855c64c6
+packaging @ file:///opt/miniconda3/conda-bld/packaging_1761049078840/work
+pillow @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_94x67n90dt/croot/pillow_1752524540258/work
+pydantic==2.12.5
+pydantic_core==2.41.5
+pyparsing @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_65qfw6vkxg/croot/pyparsing_1731445528142/work
+python-dateutil @ file:///private/var/folders/k1/30mswbxs7r1g6zwn8y4fyt500000gp/T/abs_66ud1l42_h/croot/python-dateutil_1716495741162/work
+PyYAML @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_faoex52hrr/croot/pyyaml_1728657970485/work
+six @ file:///private/var/folders/k1/30mswbxs7r1g6zwn8y4fyt500000gp/T/abs_03myqm7p6o/croot/six_1744271511946/work
+starlette==0.49.3
+sympy @ file:///private/var/folders/k1/30mswbxs7r1g6zwn8y4fyt500000gp/T/abs_9b15dnv4zk/croot/sympy_1756713487054/work
+torch==2.2.2
+tornado @ file:///private/var/folders/k1/30mswbxs7r1g6zwn8y4fyt500000gp/T/abs_63s3osc0_1/croot/tornado_1748956943583/work
+typing-inspection==0.4.2
+typing_extensions @ file:///private/var/folders/k1/30mswbxs7r1g6zwn8y4fyt500000gp/T/abs_dffmcwqo6o/croot/typing_extensions_1756281471323/work
+uvicorn==0.39.0
+zipp @ file:///private/var/folders/k1/30mswbxs7r1g6zwn8y4fyt500000gp/T/abs_echurpkwug/croot/zipp_1732630743967/work
