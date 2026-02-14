@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Mac
+.DS_Store
+
+# Model checkpoints (optional keep only phase1)
+phaseE_pinn/multitraj_latent_model.pt
+
+# Plots
+phaseE_pinn/plots/
+phaseE_dataset/Figure_*.png
+
+# VSCode
+.vscode/
+
+# Conda
+.env
+.venv
