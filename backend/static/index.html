@@ -1,0 +1,131 @@
+<!doctype html>
+<html>
+  <head>
+    <title>PINN Trajectory Generator</title>
+    <script src="/static/plotly-2.27.0.min.js"></script>
+  </head>
+
+  <body style="font-family: Arial; margin: 40px; background: #f4f6f8">
+    <h2 style="margin-bottom: 10px">PINN Trajectory Generator</h2>
+
+    <div style="margin-bottom: 20px">
+      <button
+        onclick="window.location.href = '/reconstruction'"
+        style="
+          padding: 8px 16px;
+          background: #333;
+          color: white;
+          border: none;
+          border-radius: 6px;
+        "
+      >
+        → Go to Reconstruction
+      </button>
+    </div>
+
+    <div style="display: flex; gap: 40px">
+      <div
+        style="
+          width: 360px;
+          background: white;
+          padding: 20px;
+          border-radius: 10px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        "
+      >
+        <h3>Initial Conditions</h3>
+
+        <label>Initial Speed (v0)</label><br />
+        <input id="v0" value="30" /><br /><br />
+
+        <label>Launch Angle (deg)</label><br />
+        <input id="theta" value="45" /><br /><br />
+
+        <label>Initial Height</label><br />
+        <input id="h0" value="2" /><br /><br />
+
+        <label>Wind Magnitude</label><br />
+        <input id="gust_mag" value="3" /><br /><br />
+
+        <label>Wind Angle (deg)</label><br />
+        <input id="gust_angle" value="10" /><br /><br />
+
+        <label>Wind Start Time</label><br />
+        <input id="gust_start" value="1" /><br /><br />
+
+        <label>Wind Duration</label><br />
+        <input id="gust_duration" value="0.5" /><br /><br />
+
+        <button
+          onclick="generate()"
+          style="
+            padding: 8px 16px;
+            background: #1976d2;
+            color: white;
+            border: none;
+            border-radius: 6px;
+          "
+        >
+          Generate
+        </button>
+      </div>
+
+      <div
+        id="plot"
+        style="
+          flex: 1;
+          height: 600px;
+          background: white;
+          border-radius: 10px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        "
+      ></div>
+    </div>
+
+    <script>
+      async function generate() {
+        const response = await fetch("/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            v0: parseFloat(v0.value),
+            theta_deg: parseFloat(theta.value),
+            h0: parseFloat(h0.value),
+            gust_magnitude: parseFloat(gust_mag.value),
+            gust_angle_deg: parseFloat(gust_angle.value),
+            gust_start: parseFloat(gust_start.value),
+            gust_duration: parseFloat(gust_duration.value),
+          }),
+        });
+
+        const data = await response.json();
+
+        Plotly.newPlot(
+          "plot",
+          [
+            {
+              x: data.true_x,
+              y: data.true_y,
+              mode: "lines",
+              name: "Analytical",
+              line: { color: "blue" },
+            },
+
+            {
+              x: data.pred_x,
+              y: data.pred_y,
+              mode: "lines",
+              name: "PINN Prediction",
+              line: { dash: "dash", color: "orange" },
+            },
+          ],
+          {
+            title: "Trajectory Comparison",
+            xaxis: { title: "X Position" },
+            yaxis: { title: "Y Position" },
+          },
+        );
+      }
+    </script>
+  </body>
+</html>
