@@ -1,0 +1,335 @@
+<!doctype html>
+<html>
+  <head>
+    <title>PINN Partial Reconstruction</title>
+    <script src="/static/plotly-2.27.0.min.js"></script>
+  </head>
+
+  <body style="font-family: Arial; margin: 40px; background: #f4f6f8">
+    <h2>PINN Partial Reconstruction</h2>
+
+    <div style="margin-bottom: 20px">
+      <button
+        onclick="window.location.href = '/'"
+        style="
+          padding: 8px 16px;
+          background: #333;
+          color: white;
+          border: none;
+          border-radius: 6px;
+        "
+      >
+        ← Back to Generator
+      </button>
+    </div>
+
+    <div style="display: flex; gap: 40px">
+      <!-- LEFT PANEL -->
+      <div
+        style="
+          width: 380px;
+          background: white;
+          padding: 20px;
+          border-radius: 10px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        "
+      >
+        <h3>Initial Conditions</h3>
+
+        <input id="v0" value="30" /><br /><br />
+        <input id="theta" value="45" /><br /><br />
+        <input id="h0" value="2" /><br /><br />
+        <input id="gustMag" value="3" /><br /><br />
+        <input id="gustAngle" value="10" /><br /><br />
+        <input id="gustStart" value="1" /><br /><br />
+        <input id="gustDuration" value="0.5" /><br /><br />
+
+        <button
+          onclick="generateAnalytical()"
+          style="
+            padding: 8px 16px;
+            background: #1976d2;
+            color: white;
+            border: none;
+            border-radius: 6px;
+          "
+        >
+          Generate Analytical
+        </button>
+
+        <hr style="margin: 20px 0" />
+
+        <h3>Mode</h3>
+        <select id="mode" onchange="updateMode()">
+          <option value="none">Analytical Only</option>
+          <option value="slice">Slice Mode</option>
+          <option value="sparse">Sparse Points Mode</option>
+        </select>
+
+        <div id="sliceControls" style="display: none; margin-top: 15px">
+          Start % <span id="startVal">0</span><br />
+          <input
+            type="range"
+            id="sliceStart"
+            min="0"
+            max="95"
+            value="0"
+            oninput="updatePreview()"
+          /><br /><br />
+
+          Length % <span id="lengthVal">30</span><br />
+          <input
+            type="range"
+            id="sliceLength"
+            min="5"
+            max="100"
+            value="30"
+            oninput="updatePreview()"
+          />
+        </div>
+
+        <div id="sparseControls" style="display: none; margin-top: 15px">
+          Points <span id="pointVal">20</span><br />
+          <input
+            type="range"
+            id="pointCount"
+            min="5"
+            max="100"
+            value="20"
+            oninput="updatePreview()"
+          />
+        </div>
+
+        <br />
+
+        <h3>Noise</h3>
+        <select id="noiseLevel" onchange="updatePreview()">
+          <option value="none">None</option>
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+        </select>
+
+        <br /><br />
+
+        <button
+          onclick="reconstruct()"
+          style="
+            padding: 8px 16px;
+            background: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 6px;
+          "
+        >
+          Reconstruct
+        </button>
+      </div>
+
+      <!-- RIGHT PANEL -->
+      <div style="flex: 1">
+        <div
+          id="analyticalPlot"
+          style="
+            height: 400px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+          "
+        ></div>
+
+        <br />
+
+        <div
+          id="reconPlot"
+          style="
+            height: 400px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+          "
+        ></div>
+      </div>
+    </div>
+
+    <script>
+      let currentData = null;
+      let storedIndices = [];
+
+      function updateMode() {
+        sliceControls.style.display = mode.value === "slice" ? "block" : "none";
+        sparseControls.style.display =
+          mode.value === "sparse" ? "block" : "none";
+        updatePreview();
+      }
+
+      function getNoiseAmplitude() {
+        if (noiseLevel.value === "low") return 0.01;
+        if (noiseLevel.value === "medium") return 0.03;
+        if (noiseLevel.value === "high") return 0.07;
+        return 0;
+      }
+
+      function applyNoise(arr) {
+        const amp = getNoiseAmplitude();
+        return arr.map((v) => v + amp * (Math.random() * 2 - 1) * Math.abs(v));
+      }
+
+      async function generateAnalytical() {
+        const response = await fetch("/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            v0: parseFloat(v0.value),
+            theta_deg: parseFloat(theta.value),
+            h0: parseFloat(h0.value),
+            gust_magnitude: parseFloat(gustMag.value),
+            gust_angle_deg: parseFloat(gustAngle.value),
+            gust_start: parseFloat(gustStart.value),
+            gust_duration: parseFloat(gustDuration.value),
+          }),
+        });
+
+        currentData = await response.json();
+        updatePreview();
+        Plotly.newPlot("reconPlot", []);
+      }
+
+      function updatePreview() {
+        if (!currentData) return;
+
+        let traces = [
+          {
+            x: currentData.true_x,
+            y: currentData.true_y,
+            mode: "lines",
+            line: { color: "blue" },
+            name: "Analytical",
+          },
+        ];
+
+        const total = currentData.t.length;
+
+        if (mode.value === "slice") {
+          startVal.innerText = sliceStart.value;
+          lengthVal.innerText = sliceLength.value;
+
+          const start = Math.floor((sliceStart.value / 100) * total);
+          const length = Math.floor((sliceLength.value / 100) * total);
+          const end = Math.min(start + length, total);
+
+          let x = currentData.true_x.slice(start, end);
+          let y = currentData.true_y.slice(start, end);
+
+          x = applyNoise(x);
+          y = applyNoise(y);
+
+          traces.push({
+            x: x,
+            y: y,
+            mode: "markers",
+            marker: { color: "red" },
+            name: "Selected Slice",
+          });
+        }
+
+        if (mode.value === "sparse") {
+          pointVal.innerText = pointCount.value;
+          storedIndices = [];
+          const count = parseInt(pointCount.value);
+
+          for (let i = 0; i < count; i++)
+            storedIndices.push(Math.floor(Math.random() * total));
+
+          let x = storedIndices.map((i) => currentData.true_x[i]);
+          let y = storedIndices.map((i) => currentData.true_y[i]);
+
+          x = applyNoise(x);
+          y = applyNoise(y);
+
+          traces.push({
+            x: x,
+            y: y,
+            mode: "markers",
+            marker: { color: "red", size: 7 },
+            name: "Sparse Points",
+          });
+        }
+
+        Plotly.newPlot("analyticalPlot", traces);
+      }
+
+      async function reconstruct() {
+        if (!currentData) return;
+        if (mode.value === "none") return;
+
+        let t_obs = [],
+          x_obs = [],
+          y_obs = [];
+        const total = currentData.t.length;
+
+        if (mode.value === "slice") {
+          const start = Math.floor((sliceStart.value / 100) * total);
+          const length = Math.floor((sliceLength.value / 100) * total);
+          const end = Math.min(start + length, total);
+
+          t_obs = currentData.t.slice(start, end);
+          x_obs = currentData.true_x.slice(start, end);
+          y_obs = currentData.true_y.slice(start, end);
+        }
+
+        if (mode.value === "sparse") {
+          t_obs = storedIndices.map((i) => currentData.t[i]);
+          x_obs = storedIndices.map((i) => currentData.true_x[i]);
+          y_obs = storedIndices.map((i) => currentData.true_y[i]);
+        }
+
+        x_obs = applyNoise(x_obs);
+        y_obs = applyNoise(y_obs);
+
+        const response = await fetch("/reconstruct", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            v0: parseFloat(v0.value),
+            theta_deg: parseFloat(theta.value),
+            h0: parseFloat(h0.value),
+            gust_magnitude: parseFloat(gustMag.value),
+            gust_angle_deg: parseFloat(gustAngle.value),
+            gust_start: parseFloat(gustStart.value),
+            gust_duration: parseFloat(gustDuration.value),
+            t_obs: t_obs,
+            x_obs: x_obs,
+            y_obs: y_obs,
+          }),
+        });
+
+        const data = await response.json();
+
+        Plotly.newPlot("reconPlot", [
+          {
+            x: currentData.true_x,
+            y: currentData.true_y,
+            mode: "lines",
+            name: "True Full",
+            line: { color: "blue" },
+          },
+          {
+            x: x_obs,
+            y: y_obs,
+            mode: "markers",
+            name: "Observed",
+            marker: { color: "red" },
+          },
+          {
+            x: data.pred_x,
+            y: data.pred_y,
+            mode: "lines",
+            name: "PINN Prediction",
+            line: { dash: "dash", color: "orange" },
+          },
+        ]);
+      }
+    </script>
+  </body>
+</html>
