@@ -13,7 +13,7 @@ from backend.model_service import PINNModelService
 # App Initialization
 # -----------------------------------------------------
 
-app = FastAPI()
+app = FastAPI(root_path="")
 
 # Load model once at startup
 model_service = PINNModelService()
